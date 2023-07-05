@@ -18,12 +18,14 @@ public class GRPCServer {
     private Server server;
 
     private void start() throws IOException {
+        //// 创建服务器，并指定监听的端口号
         server = ServerBuilder.forPort(port)
                 .addService( new GreeterImpl())
                 .build()
                 .start();
         logger.info("Server started, listening on " + port);
 
+        // JVM 关闭时执行的钩子方法，用于优雅关闭服务器
         Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override
             public void run() {
