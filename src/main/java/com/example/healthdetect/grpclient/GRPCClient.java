@@ -10,9 +10,7 @@ import io.grpc.StatusRuntimeException;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-/**
- * A simple client that requests a greeting from the {@link com.example.healthdetect.grpcserver.GRPCServer}.
- */
+import com.example.healthdetect.utils.Base64Decode;
 public class GRPCClient {
     private static final Logger logger = Logger.getLogger(GRPCClient.class.getName());
 
@@ -38,17 +36,20 @@ public class GRPCClient {
      * Say hello to server.
      */
     public void greet(String name) {
-        logger.info("Will try to greet server " + name + " ...");
+        logger.info("Will try to greet server of" + name + " ...");
         HelloRequest request = HelloRequest.newBuilder().setName(name).build();
         HelloReply response;
         try {
             response = blockingStub.sayHello(request);
+
         } catch (StatusRuntimeException e) {
             logger.log(Level.WARNING, "RPC failed: {0}", e.getStatus());
             return;
         }
-        // 输出信息
-        logger.info("Greeting from server: " + response.getMessage());
+//         输出信息
+        logger.info("Greeting from server: " + response.getDate()
+                                                        + " " + response.getType()
+                                                        + " " + response.getBase64Url());
     }
 
     /**
@@ -56,13 +57,15 @@ public class GRPCClient {
      * greeting.
      */
     public static void main(String[] args) throws Exception {
-        GRPCClient client = new GRPCClient("localhost", 50051);
+        // 定义访问的客户端
+        GRPCClient client = new GRPCClient("localhost", 50001);
         try {
             String user = "hjt";
             if (args.length > 0) {
                 user = args[0];
             }
             client.greet(user);
+
         } finally {
             client.shutdown();
         }
