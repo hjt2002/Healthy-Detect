@@ -21,10 +21,12 @@ public class GRPCClient {
      * Construct client connecting to HelloWorld server at {@code host:port}.
      */
     public GRPCClient(String host, int port) {
-
+        // 创建与服务器的通信通道
         channel = ManagedChannelBuilder.forAddress(host, port)
                 .usePlaintext()
                 .build();
+
+        // 创建 Greeter 的阻塞存根
         blockingStub = GreeterGrpc.newBlockingStub(channel);
     }
 

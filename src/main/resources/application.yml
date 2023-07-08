@@ -1,0 +1,50 @@
+server:
+  port: 8081
+
+spring:
+  #静态资源处理
+  resources:
+    #启动默认静态资源处理，默认启动
+    add-mappings: true
+    cache:
+      cachecontrol:
+        #缓存响应时间，单位秒
+        max-age: 3600
+    chain:
+      #资源配链启动缓存，默认启动
+      cache: true
+      #启动资源链，默认禁用
+      enabled: true
+      #启用压缩资源（gzip，brotil）解析，默认禁用
+      compressed: true
+      #启用h5应用缓存，默认禁用
+      html-application-cache: true
+    static-locations: classpath:/static/
+
+  thymeleaf:
+    cache: false
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://119.3.221.223:3306/health?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai
+    username: root
+    password: xxq123456
+    hikari:
+      pool-name: DateHikariCP
+      minimum-idle: 5
+      idle-timeout: 1800000
+      maximum-pool-size: 10
+      auto-commit: true
+      max-lifetime: 1800000
+      connection-timeout: 3000
+      connection-test-query: SELECT 1
+
+
+
+#graph_path: C:\\Users\\2146\\Desktop\\info
+graph_path: /health/graph
+
+##mybatis-plus
+#mybatis-plus:
+#  mapper-locations: classpath*:/dao/*Mapper.xml
+#  type-aliases-package: com.example.healthdetect
+
