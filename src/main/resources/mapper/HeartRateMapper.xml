@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.healthdetect.dao.HeartRateMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.example.healthdetect.entity.HeartRate">
+        <result column="heart_rate" property="heartRate" />
+        <result column="detect_time" property="detectTime" />
+        <result column="mean_nni" property="meanNni" />
+        <result column="sdnn" property="sdnn" />
+        <result column="sdsd" property="sdsd" />
+        <result column="nni_50" property="nni50" />
+        <result column="pnni_50" property="pnni50" />
+        <result column="nni_20" property="nni20" />
+        <result column="pnni_20" property="pnni20" />
+        <result column="rmssd" property="rmssd" />
+        <result column="median_nni" property="medianNni" />
+        <result column="range_nni" property="rangeNni" />
+        <result column="cvsd" property="cvsd" />
+        <result column="cvnni" property="cvnni" />
+        <result column="mean_hr" property="meanHr" />
+        <result column="max_hr" property="maxHr" />
+        <result column="min_hr" property="minHr" />
+        <result column="std_hr" property="stdHr" />
+    </resultMap>
+
+</mapper>

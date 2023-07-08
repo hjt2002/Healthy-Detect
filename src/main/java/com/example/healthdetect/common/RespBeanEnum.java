@@ -11,8 +11,9 @@ package com.example.healthdetect.common;
 public enum RespBeanEnum {
 
     //通用
-    SUCCESS(200, "SUCCESS"),
+    SUCCESS(200, "响应成功"),
     ERROR(500, "服务端异常"),
+    PIC_ERROR(508, "图片资源异常"),
 
     ;
 
