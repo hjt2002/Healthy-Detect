@@ -10,7 +10,6 @@ import io.grpc.StatusRuntimeException;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import com.example.healthdetect.utils.Base64Decode;
 public class GRPCClient {
     private static final Logger logger = Logger.getLogger(GRPCClient.class.getName());
 
@@ -37,21 +36,22 @@ public class GRPCClient {
     /**
      * Say hello to server.
      */
-    public void greet(String name) {
+    public HelloReply greet(String name) {
         logger.info("Will try to greet server of" + name + " ...");
         HelloRequest request = HelloRequest.newBuilder().setName(name).build();
-        HelloReply response;
+        HelloReply response = null;
         try {
             response = blockingStub.sayHello(request);
 
         } catch (StatusRuntimeException e) {
             logger.log(Level.WARNING, "RPC failed: {0}", e.getStatus());
-            return;
+            return response;
         }
 //         输出信息
         logger.info("Greeting from server: " + response.getDate()
                                                         + " " + response.getType()
                                                         + " " + response.getBase64Url());
+        return response;
     }
 
     /**
