@@ -5,18 +5,15 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.example.grpc.HelloReply;
 import com.example.healthdetect.common.RespBean;
 import com.example.healthdetect.common.RespBeanEnum;
+import com.example.healthdetect.entity.BloodPressure;
 import com.example.healthdetect.entity.HeartRate;
-import com.example.healthdetect.entity.Indicator;
 import com.example.healthdetect.exception.GlobalException;
 import com.example.healthdetect.grpclient.GRPCClient;
-import com.example.healthdetect.service.ExamineService;
+import com.example.healthdetect.service.BloodPressureService;
 import com.example.healthdetect.service.HeartRateService;
-import org.apache.ibatis.annotations.Param;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
@@ -28,15 +25,15 @@ import java.util.Date;
 import java.util.List;
 
 @RestController
-@RequestMapping("/heart_rate")
-public class HeartRateController {
+@RequestMapping("/blood_pressure")
+public class BloodPressureController {
 
     @Autowired
-    private HeartRateService heartRateService;
+    private BloodPressureService bloodPressureService;
 
     @PostMapping("/insert")
-    public RespBean insert(@RequestBody HeartRate  heartRate) {
-        boolean save = heartRateService.save(heartRate);
+    public RespBean insert(@RequestBody BloodPressure bloodPressure) {
+        boolean save = bloodPressureService.save(bloodPressure);
         if (!save) {
             throw new GlobalException(RespBeanEnum.ERROR);
         }
@@ -45,12 +42,12 @@ public class HeartRateController {
 
     @GetMapping("/list")
     public RespBean getList(@RequestParam(required = false) String examTimeMin, @RequestParam(required = false) String examTimeMax) {
-        LambdaQueryWrapper<HeartRate> lambdaQuery = Wrappers.lambdaQuery();
+        LambdaQueryWrapper<BloodPressure> lambdaQuery = Wrappers.lambdaQuery();
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         if (examTimeMin != null) {
             try {
                 Date minDate = dateFormat.parse(examTimeMin);
-                lambdaQuery.ge(HeartRate::getDetectTime, minDate);
+                lambdaQuery.ge(BloodPressure::getDetectTime, minDate);
             } catch (ParseException e) {
                 e.printStackTrace();
                 // 处理日期解析异常...
@@ -59,30 +56,16 @@ public class HeartRateController {
         if (examTimeMax != null) {
             try {
                 Date maxDate = dateFormat.parse(examTimeMax);
-                lambdaQuery.le(HeartRate::getDetectTime, maxDate);
+                lambdaQuery.le(BloodPressure::getDetectTime, maxDate);
             } catch (ParseException e) {
                 e.printStackTrace();
                 // 处理日期解析异常...
             }
         }
         // 执行查询操作
-        List<HeartRate> resultList = heartRateService.list(lambdaQuery);
+        List<BloodPressure> resultList = bloodPressureService.list(lambdaQuery);
         return RespBean.success(resultList);
     }
-
-    @GetMapping("/latest")
-    public RespBean getLatest() {
-        LambdaQueryWrapper<HeartRate> lambdaQuery = Wrappers.lambdaQuery();
-        lambdaQuery.orderByDesc(HeartRate::getDetectTime).last(" LIMIT 1");
-        // 执行查询操作
-        List<HeartRate> resultList = heartRateService.list(lambdaQuery);
-        return RespBean.success(resultList);
-    }
-
-    private InputStream getImgInputStream(String path) throws FileNotFoundException {
-        return new FileInputStream(new File(path));
-    }
-
 
     /*
     * 调用算法服务，得到图片的base64编码
@@ -112,26 +95,26 @@ public class HeartRateController {
 
     }
 
+    @GetMapping("/latest")
+    public RespBean getLatest() {
+        LambdaQueryWrapper<BloodPressure> lambdaQuery = Wrappers.lambdaQuery();
+        lambdaQuery.orderByDesc(BloodPressure::getDetectTime).last(" LIMIT 1");
+        // 执行查询操作
+        List<BloodPressure> resultList = bloodPressureService.list(lambdaQuery);
+        return RespBean.success(resultList);
+    }
+
     /*
      * 调用算法服务，得到图片的base64编码
      * 直接向前端返回base64编码
      * */
-//    @GetMapping("/base64")
-//    public RespBean getGraphBase64(HttpServletResponse resp) {
-//        //调用算法端，获取base64编码
-//        String base64 = null;
-//        return RespBean.success(base64);
-//    }
-
-
-
     @GetMapping("/base64")
     public RespBean getGraphBase64(HttpServletResponse resp) {
         //调用算法端，获取base64编码
         GRPCClient client = new GRPCClient("localhost", 50001);
         HelloReply response = null;
         try {
-            String queueName = "heart_rate";
+            String queueName = "blood_pressure";
             response = client.greet(queueName);
 
         } finally {
@@ -144,12 +127,4 @@ public class HeartRateController {
         String base64 = response.getBase64Url();
         return RespBean.success(base64);
     }
-
-    @GetMapping("/start_examine")
-    public void startExamine() {
-        // 发送消息，算法端开始接受视频流...
-
-        // 消息回调，得到指标
-    }
-
 }

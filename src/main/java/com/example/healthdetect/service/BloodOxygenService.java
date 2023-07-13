@@ -3,11 +3,8 @@ package com.example.healthdetect.service;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.example.healthdetect.dao.HeartRateMapper;
-import com.example.healthdetect.dao.IndicatorMapper;
-import com.example.healthdetect.entity.HeartRate;
-import com.example.healthdetect.entity.Indicator;
-import com.example.healthdetect.entity.Temperature;
+import com.example.healthdetect.dao.BloodOxygenMapper;
+import com.example.healthdetect.entity.BloodOxygen;
 import com.example.healthdetect.grpclient.GRPCClient;
 import org.springframework.stereotype.Service;
 
@@ -17,28 +14,27 @@ import java.util.HashMap;
 import java.util.List;
 
 @Service
-public class HeartRateService extends ServiceImpl<HeartRateMapper, HeartRate> {
-
+public class BloodOxygenService extends ServiceImpl<BloodOxygenMapper, BloodOxygen> {
 
     private long timeInterval=1000;
 
     private String base64;
-    private List<HeartRate> dataArr = new ArrayList<>();
+    private List<BloodOxygen> dataArr = new ArrayList<>();
 
     private void getDataFromPy() {
         //调用算法端，获取base64编码
         GRPCClient client = new GRPCClient("localhost", 50001);
         com.example.grpc.HelloReply response = null;
         try {
-            String queueName = "heart_rate";
+            String queueName = "oxygen";
             response = client.greet(queueName);
-            if ("null".equals(response.getType())){
-                System.out.println("算法端暂时无数据--->"+response);
+            if (response==null||"null".equals(response.getType())){
+                System.out.println("blood oxygen 算法端暂时无数据--->"+response);
             }else {
                 String mapStr = response.getBase64Url();
                 JSONObject resObj = JSONObject.parseObject(mapStr);
-                String arr = resObj.getString("heartRateList");
-                this.dataArr = JSONObject.parseArray(arr, HeartRate.class);
+                String oxygenArr = resObj.getString("oxygenArr");
+                this.dataArr = JSONObject.parseArray(oxygenArr, BloodOxygen.class);
                 this.base64 = resObj.getString("base64");
             }
 
@@ -55,7 +51,7 @@ public class HeartRateService extends ServiceImpl<HeartRateMapper, HeartRate> {
 
     public HashMap<String ,String > getLatest() {
         HashMap<String, String> data = new HashMap<>();
-        data.put("heartRateList", JSON.toJSONString(this.dataArr) );
+        data.put("dataList", JSON.toJSONString(this.dataArr) );
         data.put("base64", this.base64);
         return data;
     }
@@ -77,7 +73,6 @@ public class HeartRateService extends ServiceImpl<HeartRateMapper, HeartRate> {
         };
         Thread thread = new Thread(runnable);
         thread.start();
-        System.out.println("开始获取心率数据");
 
     }
 
