@@ -135,10 +135,10 @@ def gen_pic(queue):
 
     print(data)
     for item in data:
-        x_data.append(item['time'])
+        x_data.append(item['detectTime'])
         y_data.append(item['temperature'])
     plt.plot(x_data, y_data)
-    plt.xlabel("time")
+    plt.xlabel("detectTime")
     plt.ylabel("temperature")
     # plt.legend()
 
@@ -150,37 +150,10 @@ def gen_pic(queue):
 
     cur_time = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
 
-    dict = {"temperature": temperature, "time": cur_time, "base64": str(base64_png, encoding='utf-8')}
+    dict = {"temperatureArr": data, "base64": str(base64_png, encoding='utf-8')}
     json_map = json.dumps(dict)
     queue.put(json_map)
     plt.close()
-
-
-def draw():
-    x_data = []
-    y_data = []
-
-    # 从 deque 中提取数据
-    data = list(data_queue)
-    for item in data:
-        y, x = item
-        x_data.append(x)
-        y_data.append(y)
-
-    # 创建 Line 实例
-    line_chart = Line()
-    line_chart.add_xaxis(x_data)
-    line_chart.add_yaxis("Y", y_data)
-
-    # 设置图表标题、坐标轴名称等
-    line_chart.set_global_opts(
-        title_opts=opts.TitleOpts(title="Line Chart"),
-        xaxis_opts=opts.AxisOpts(name="time"),
-        yaxis_opts=opts.AxisOpts(name="temperature")
-    )
-    # 渲染图表
-    pic = line_chart.render("line_chart.png")
-    return pic
 
 
 def send_result_to_backend(queue):
@@ -189,10 +162,10 @@ def send_result_to_backend(queue):
     # 将新数据塞入窗口，窗口有最近的5个体温，计算平均值，发送给springboot
     new_data = temperature
     cur_time = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
-    data_queue.append({"temperature": temperature, "time": cur_time})
+    data_queue.append({"temperature": temperature, "detectTime": cur_time})
     print(list(data_queue))
 
-    if temperature != -1000:
+    if temperature > 0 :
         # pic
         gen_pic(queue)
         # print({temperature, tim})
