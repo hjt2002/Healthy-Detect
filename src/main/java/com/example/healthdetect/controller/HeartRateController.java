@@ -2,11 +2,13 @@ package com.example.healthdetect.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.example.grpc.HelloReply;
 import com.example.healthdetect.common.RespBean;
 import com.example.healthdetect.common.RespBeanEnum;
 import com.example.healthdetect.entity.HeartRate;
 import com.example.healthdetect.entity.Indicator;
 import com.example.healthdetect.exception.GlobalException;
+import com.example.healthdetect.grpclient.GRPCClient;
 import com.example.healthdetect.service.ExamineService;
 import com.example.healthdetect.service.HeartRateService;
 import org.apache.ibatis.annotations.Param;
@@ -105,10 +107,30 @@ public class HeartRateController {
      * 调用算法服务，得到图片的base64编码
      * 直接向前端返回base64编码
      * */
+//    @GetMapping("/base64")
+//    public RespBean getGraphBase64(HttpServletResponse resp) {
+//        //调用算法端，获取base64编码
+//        String base64 = null;
+//        return RespBean.success(base64);
+//    }
+
     @GetMapping("/base64")
     public RespBean getGraphBase64(HttpServletResponse resp) {
         //调用算法端，获取base64编码
-        String base64 = null;
+        GRPCClient client = new GRPCClient("localhost", 50001);
+        HelloReply response = null;
+        try {
+            String user = "hjt";
+            response = client.greet(user);
+
+        } finally {
+            try {
+                client.shutdown();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        String base64 = response.getBase64Url();
         return RespBean.success(base64);
     }
 
