@@ -26,11 +26,13 @@ global BASE64_QUEUE_HEART_RATE
 global BASE64_QUEUE_BLOOD_PRESSURE
 global BASE64_QUEUE_TEMPERATURE
 global BASE64_QUEUE_OX
+global BASE64_QUEUE_RESPIRATION_RATE
 
 BASE64_QUEUE_HEART_RATE = queue.Queue()
 BASE64_QUEUE_BLOOD_PRESSURE = queue.Queue()
 BASE64_QUEUE_TEMPERATURE = queue.Queue()
 BASE64_QUEUE_OX=queue.Queue()
+BASE64_QUEUE_RESPIRATION_RATE=queue.Queue()
 
 class Greeter(helloworld_pb2_grpc.GreeterServicer):
     def SayHello(self, request, context):
@@ -73,6 +75,20 @@ class Greeter(helloworld_pb2_grpc.GreeterServicer):
                 my_type = "oxygen"
                 my_oxygen = BASE64_QUEUE_OX.get()
                 response = helloworld_pb2.HelloReply(date=my_date, type=my_type, base64url=my_oxygen)
+            else:
+                # 队列为空
+                response = helloworld_pb2.HelloReply(type="null")
+
+
+        elif request.name == "respiration_rate":
+            # 血氧服务
+            if BASE64_QUEUE_RESPIRATION_RATE.qsize() != 0:
+                # 队列存在str
+                # 定义返回数据
+                my_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                my_type = "respiration"
+                my_rr = BASE64_QUEUE_RESPIRATION_RATE.get()
+                response = helloworld_pb2.HelloReply(date=my_date, type=my_type, base64url=my_rr)
             else:
                 # 队列为空
                 response = helloworld_pb2.HelloReply(type="null")
@@ -120,17 +136,22 @@ def serve():
 
 def my_main():
     from algorithm.heartRate.main2 import main
-    from algorithm.temperature.thermal_screening import main as temperature_main
-    from algorithm.bloodOxygen.mainO import ox_main
     # BASE64_QUEUE_HEART_RATE 心率监测服务
     thread_algorithm_heart_rate = Thread(target=main, args=(BASE64_QUEUE_HEART_RATE,))
-    thread_algorithm_heart_rate.start()
+    # thread_algorithm_heart_rate.start()
 
+    from algorithm.temperature.thermal_screening import main as temperature_main
     thread_algorithm_temperature = Thread(target=temperature_main, args=(BASE64_QUEUE_TEMPERATURE,))
     thread_algorithm_temperature.start()
 
+    from algorithm.bloodOxygen.mainO import ox_main
     thread_algorithm_oxygen = Thread(target=ox_main, args=(BASE64_QUEUE_OX,))
     thread_algorithm_oxygen.start()
+
+    from algorithm.respirationRate.mainR import rr_main
+    thread_algorithm_rr = Thread(target=rr_main, args=(BASE64_QUEUE_RESPIRATION_RATE,))
+    thread_algorithm_rr.start()
+
 
     # BASE64_QUEUE_BLOOD_PRESSURE 血压监测服务
     # thread_algorithm_blood_pressure = Thread(target=,args=(BASE64_QUEUE_BLOOD_PRESSURE,))

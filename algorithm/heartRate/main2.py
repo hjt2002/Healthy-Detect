@@ -53,7 +53,6 @@ def reconstructFrame(pyramid, index, levels):
 
 
 def pic(x, y, queue):
-    tim = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
     plt.plot(x, y)
     plt.xlabel("time")
     plt.ylabel("BPM")

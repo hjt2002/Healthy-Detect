@@ -71,7 +71,7 @@ def gen_pic(queue):
     # print(data)
     for item in data:
         x_data.append(item['detectTime'])
-        y_data.append(item['ox_level'])
+        y_data.append(item['oxLevel'])
     plt.plot(x_data, y_data)
     plt.xlabel("detect_time")
     plt.ylabel("blood_oxygen_level")
@@ -83,7 +83,6 @@ def gen_pic(queue):
     plt.savefig(buffer, format='png')
     base64_png = base64.b64encode(buffer.getvalue())
 
-    cur_time = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
 
     dict = {"dataList": data, "base64": str(base64_png, encoding='utf-8')}
     json_map = json.dumps(dict)
@@ -98,7 +97,7 @@ def send_result_to_backend(queue):
     new_data = ox_level
 
     if ox_level > 0:
-        cur_time = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
+        cur_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         # 要传到 springboot，key名要和 那边的实体属性 同名
         data_queue.append({"oxLevel": new_data, "detectTime": cur_time})
         print(list(data_queue))

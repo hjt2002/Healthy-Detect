@@ -148,8 +148,6 @@ def gen_pic(queue):
     plt.savefig(buffer, format='png')
     base64_png = base64.b64encode(buffer.getvalue())
 
-    cur_time = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
-
     dict = {"temperatureArr": data, "base64": str(base64_png, encoding='utf-8')}
     json_map = json.dumps(dict)
     queue.put(json_map)
@@ -159,9 +157,8 @@ def gen_pic(queue):
 def send_result_to_backend(queue):
     # count += 1
     #
-    # 将新数据塞入窗口，窗口有最近的5个体温，计算平均值，发送给springboot
     new_data = temperature
-    cur_time = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
+    cur_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     data_queue.append({"temperature": temperature, "detectTime": cur_time})
     print(list(data_queue))
 
