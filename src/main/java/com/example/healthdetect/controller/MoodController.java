@@ -6,28 +6,33 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.example.healthdetect.common.RespBean;
 import com.example.healthdetect.common.RespBeanEnum;
-import com.example.healthdetect.entity.BloodOxygen;
+import com.example.healthdetect.entity.Mood;
+import com.example.healthdetect.entity.Temperature;
 import com.example.healthdetect.exception.GlobalException;
-import com.example.healthdetect.service.BloodOxygenService;
+import com.example.healthdetect.grpclient.GRPCClient;
+import com.example.healthdetect.service.MoodService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Random;
 
 @RestController
-@RequestMapping("/oxygen")
-public class OxygenController {
+@RequestMapping("/mood")
+public class MoodController {
 
     @Autowired
-    private BloodOxygenService bloodOxygenService;
+    private MoodService moodService;
 
 
     @PostMapping("/insert")
     @ResponseBody
-    public RespBean insert(@RequestBody BloodOxygen bloodOxygen) {
-        boolean save = bloodOxygenService.save(bloodOxygen);
+    public RespBean insert(@RequestBody Mood mood) {
+        boolean save = moodService.save(mood);
         if (!save) {
             throw new GlobalException(RespBeanEnum.ERROR);
         }
@@ -37,12 +42,12 @@ public class OxygenController {
     @GetMapping("/list")
     @ResponseBody
     public RespBean getList(@RequestParam(required = false) String examTimeMin, @RequestParam(required = false) String examTimeMax) {
-        LambdaQueryWrapper<BloodOxygen> lambdaQuery = Wrappers.lambdaQuery();
+        LambdaQueryWrapper<Mood> lambdaQuery = Wrappers.lambdaQuery();
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         if (examTimeMin != null) {
             try {
                 Date minDate = dateFormat.parse(examTimeMin);
-                lambdaQuery.ge(BloodOxygen::getDetectTime, minDate);
+                lambdaQuery.ge(Mood::getStartTime, minDate);
             } catch (ParseException e) {
                 e.printStackTrace();
                 // 处理日期解析异常...
@@ -51,26 +56,20 @@ public class OxygenController {
         if (examTimeMax != null) {
             try {
                 Date maxDate = dateFormat.parse(examTimeMax);
-                lambdaQuery.le(BloodOxygen::getDetectTime, maxDate);
+                lambdaQuery.le(Mood::getEndTime, maxDate);
             } catch (ParseException e) {
                 e.printStackTrace();
                 // 处理日期解析异常...
             }
         }
         // 执行查询操作
-        List<BloodOxygen> resultList = bloodOxygenService.list(lambdaQuery);
+        List<Mood> resultList = moodService.list(lambdaQuery);
         return RespBean.success(resultList);
     }
 
     @GetMapping("/latest_one")
     public RespBean getLatestOne() {
-        return RespBean.success(bloodOxygenService.getLatestOne());
+        return RespBean.success(moodService.getLatestOne());
     }
-
-    @GetMapping("/latest_queue")
-    public RespBean getLatestData() {
-        return RespBean.success(bloodOxygenService.getLatestQueue());
-    }
-
 
 }

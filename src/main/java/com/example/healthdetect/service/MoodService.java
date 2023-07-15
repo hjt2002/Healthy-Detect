@@ -6,7 +6,8 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.healthdetect.common.RespBeanEnum;
-import com.example.healthdetect.dao.TemperatureMapper;
+import com.example.healthdetect.dao.MoodMapper;
+import com.example.healthdetect.entity.Mood;
 import com.example.healthdetect.entity.Temperature;
 import com.example.healthdetect.exception.GlobalException;
 import com.example.healthdetect.grpclient.GRPCClient;
@@ -16,31 +17,29 @@ import javax.annotation.PostConstruct;
 import java.util.*;
 
 @Service
-public class TemperatureService extends ServiceImpl<TemperatureMapper,Temperature> {
+public class MoodService extends ServiceImpl<MoodMapper, Mood> {
 
     private long timeInterval=1000;
 
     private String base64;
-    private List<Temperature> dataArr = new ArrayList<>();
+    private Mood mood ;
 
     private void getDataFromPy() throws GlobalException{
         //调用算法端，获取base64编码
         GRPCClient client = null;
         com.example.grpc.HelloReply response = null;
+        System.out.println("GET IN HERE");
         try {
             client = new GRPCClient("localhost", 50001);
-            String queueName = "temperature";
+            String queueName = "mood";
             response = client.greet(queueName);
             if (response==null||"null".equals(response.getType())){
-                System.out.println("temperature 算法端暂时无数据--->"+response);
+                System.out.println("mood 算法端暂时无数据--->"+response);
             }else {
                 String mapStr = response.getBase64Url();
-                JSONObject resObj = JSONObject.parseObject(mapStr);
-                String temperatureArr = resObj.getString("temperatureArr");
-                this.dataArr = JSONObject.parseArray(temperatureArr, Temperature.class);
+                this.mood = JSONObject.parseObject(mapStr, Mood.class);
+                this.save(this.mood);
 //                data.put("temperatureArr", JSON.toJSONString(tempObj));
-                this.base64 = resObj.getString("base64");
-                this.save(dataArr.get(dataArr.size() - 1));
             }
 
         } finally {
@@ -51,24 +50,6 @@ public class TemperatureService extends ServiceImpl<TemperatureMapper,Temperatur
             }
         }
 
-    }
-
-    public HashMap<String ,String > getLatestQueue() {
-        if (this.dataArr.size() == 0) {
-            HashMap<String, String> data = new HashMap<>();
-            ArrayList<Temperature> temperatures = new ArrayList<>();
-            for (int i = 0; i < 15; i++) {
-                Temperature temperature = new Temperature(String.valueOf((new Random().nextInt(100))*-1), new Date().toString());
-                temperatures.add(temperature);
-            }
-            data.put("temperatureList", JSON.toJSONString(temperatures) );
-            data.put("base64", this.base64);
-            return data;
-        }
-        HashMap<String, String> data = new HashMap<>();
-        data.put("temperatureList", JSON.toJSONString(this.dataArr) );
-        data.put("base64", this.base64);
-        return data;
     }
 
     @PostConstruct
@@ -95,11 +76,11 @@ public class TemperatureService extends ServiceImpl<TemperatureMapper,Temperatur
 
     }
 
-    public Temperature getLatestOne() {
-        LambdaQueryWrapper<Temperature> lambdaQuery = Wrappers.lambdaQuery();
-        lambdaQuery.orderByDesc(Temperature::getDetectTime).last(" LIMIT 1");
+    public Mood getLatestOne() {
+        LambdaQueryWrapper<Mood> lambdaQuery = Wrappers.lambdaQuery();
+        lambdaQuery.orderByDesc(Mood::getEndTime).last(" LIMIT 1");
         // 执行查询操作
-        List<Temperature> resultList = this.list(lambdaQuery);
+        List<Mood> resultList = this.list(lambdaQuery);
         if (resultList.size() == 0) {
             return null;
         }

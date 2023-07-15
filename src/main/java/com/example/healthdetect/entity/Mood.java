@@ -5,5 +5,6 @@ import lombok.Data;
 @Data
 public class Mood {
     String mood;
-    String detectTime;
+    String startTime;
+    String endTime;
 }

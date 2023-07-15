@@ -4,6 +4,8 @@ package com.example.healthdetect.grpclient;
 import com.example.grpc.GreeterGrpc;
 import com.example.grpc.HelloReply;
 import com.example.grpc.HelloRequest;
+import com.example.healthdetect.common.RespBeanEnum;
+import com.example.healthdetect.exception.GlobalException;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.StatusRuntimeException;
@@ -21,12 +23,17 @@ public class GRPCClient {
      */
     public GRPCClient(String host, int port) {
         // 创建与服务器的通信通道
-        channel = ManagedChannelBuilder.forAddress(host, port)
-                .usePlaintext()
-                .build();
+        try {
+            channel = ManagedChannelBuilder.forAddress(host, port)
+                    .usePlaintext()
+                    .build();
 
-        // 创建 Greeter 的阻塞存根
-        blockingStub = GreeterGrpc.newBlockingStub(channel);
+            // 创建 Greeter 的阻塞存根
+            blockingStub = GreeterGrpc.newBlockingStub(channel);
+        } catch (Exception e) {
+            throw new GlobalException(RespBeanEnum.GRPC_ERROR);
+        }
+
     }
 
     public void shutdown() throws InterruptedException {
@@ -52,6 +59,7 @@ public class GRPCClient {
                                                         + " " + response.getType()
                                                         + " " + response.getBase64Url());
         return response;
+
     }
 
     /**

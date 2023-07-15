@@ -15,6 +15,8 @@ public enum RespBeanEnum {
     ERROR(500, "服务端异常"),
     PIC_ERROR(508, "图片资源异常"),
 
+    GRPC_ERROR(600, "GRPC连接异常"),
+
     ;
 
     private final Integer code;

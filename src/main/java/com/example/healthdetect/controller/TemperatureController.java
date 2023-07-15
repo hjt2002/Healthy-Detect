@@ -6,17 +6,13 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.example.healthdetect.common.RespBean;
 import com.example.healthdetect.common.RespBeanEnum;
-import com.example.healthdetect.entity.Indicator;
 import com.example.healthdetect.entity.Temperature;
 import com.example.healthdetect.exception.GlobalException;
 import com.example.healthdetect.grpclient.GRPCClient;
-import com.example.healthdetect.service.ExamineService;
 import com.example.healthdetect.service.TemperatureService;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
@@ -101,13 +97,18 @@ public class TemperatureController {
         return RespBean.success(obj);
     }
 
-    @GetMapping("/new_one")
+    @GetMapping("/latest_one")
+    public RespBean getLatestOne() {
+        return RespBean.success(temperatureService.getLatestOne());
+    }
+
+    @GetMapping("/latest_queue")
     public RespBean getLatestData() {
-        return RespBean.success(temperatureService.getLatest());
+        return RespBean.success(temperatureService.getLatestQueue());
     }
 
     @GetMapping("/base64")
-    public RespBean getGraphBase64() {
+    public RespBean getGraphBase64() throws Exception {
         //调用算法端，获取base64编码
         GRPCClient client = new GRPCClient("localhost", 50001);
         com.example.grpc.HelloReply response = null;
@@ -132,43 +133,48 @@ public class TemperatureController {
         return RespBean.success(data);
     }
 
-    @GetMapping("/graph")
-    public void getGraph(HttpServletResponse resp)  {
-        //调用算法端，获取base64编码
-        //调用算法端，获取base64编码
-        GRPCClient client = new GRPCClient("localhost", 50001);
-        com.example.grpc.HelloReply response = null;
-        try {
-            String queueName = "temperature";
-            response = client.greet(queueName);
 
-        } finally {
-            try {
-                client.shutdown();
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-        }
-        String base64 = response.getBase64Url();
-        try {
-            // 去掉base64前缀 data:image/jpeg;base64,
-            base64 = base64.substring(base64.indexOf(",", 1) + 1);
-            // 解密，解密的结果是一个byte数组
-            Base64.Decoder decoder = Base64.getDecoder();
-            byte[] imgbytes = decoder.decode(base64);
-            for (int i = 0; i < imgbytes.length; ++i) {
-                if (imgbytes[i] < 0) {
-                    imgbytes[i] += 256;
-                }
-            }
-            InputStream in =new ByteArrayInputStream(imgbytes);
-            resp.setContentType(MediaType.IMAGE_PNG_VALUE);
-            IOUtils.copy(in, resp.getOutputStream());
-        } catch (IOException e) {
-            throw new GlobalException(RespBeanEnum.PIC_ERROR);
-        }
-
-    }
+//    @GetMapping("/graph")
+//    public void getGraph(HttpServletResponse resp)  {
+//        //调用算法端，获取base64编码
+//        //调用算法端，获取base64编码
+//        GRPCClient client = new GRPCClient("localhost", 50001);
+//        com.example.grpc.HelloReply response = null;
+//        try {
+//            String queueName = "temperature";
+//            try {
+//                response = client.greet(queueName);
+//            } catch (Exception e) {
+//                throw new RuntimeException(e);
+//            }
+//
+//        } finally {
+//            try {
+//                client.shutdown();
+//            } catch (InterruptedException e) {
+//                throw new RuntimeException(e);
+//            }
+//        }
+//        String base64 = response.getBase64Url();
+//        try {
+//            // 去掉base64前缀 data:image/jpeg;base64,
+//            base64 = base64.substring(base64.indexOf(",", 1) + 1);
+//            // 解密，解密的结果是一个byte数组
+//            Base64.Decoder decoder = Base64.getDecoder();
+//            byte[] imgbytes = decoder.decode(base64);
+//            for (int i = 0; i < imgbytes.length; ++i) {
+//                if (imgbytes[i] < 0) {
+//                    imgbytes[i] += 256;
+//                }
+//            }
+//            InputStream in =new ByteArrayInputStream(imgbytes);
+//            resp.setContentType(MediaType.IMAGE_PNG_VALUE);
+//            IOUtils.copy(in, resp.getOutputStream());
+//        } catch (IOException e) {
+//            throw new GlobalException(RespBeanEnum.PIC_ERROR);
+//        }
+//
+//    }
 
 
 }

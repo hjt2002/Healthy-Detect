@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.example.healthdetect.dao.BloodPressureMapper">
+<mapper namespace="com.example.healthdetect.dao.RespirationRateMapper">
 
     <!-- 通用查询映射结果 -->
-    <resultMap id="BaseResultMap" type="com.example.healthdetect.entity.BloodPressure">
-        <result column="blood_pressure" property="bloodPressure" />
+    <resultMap id="BaseResultMap" type="com.example.healthdetect.entity.RespirationRate">
+        <result column="rate" property="rate" />
         <result column="detect_time" property="detectTime" />
     </resultMap>
 

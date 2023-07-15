@@ -70,14 +70,16 @@ public class HeartRateController {
         return RespBean.success(resultList);
     }
 
-    @GetMapping("/latest")
-    public RespBean getLatest() {
-        LambdaQueryWrapper<HeartRate> lambdaQuery = Wrappers.lambdaQuery();
-        lambdaQuery.orderByDesc(HeartRate::getDetectTime).last(" LIMIT 1");
-        // 执行查询操作
-        List<HeartRate> resultList = heartRateService.list(lambdaQuery);
-        return RespBean.success(resultList);
+    @GetMapping("/latest_one")
+    public RespBean getLatestOne() {
+        return RespBean.success(heartRateService.getLatestOne());
     }
+
+    @GetMapping("/latest_queue")
+    public RespBean getLatestData() {
+        return RespBean.success(heartRateService.getLatestQueue());
+    }
+
 
     private InputStream getImgInputStream(String path) throws FileNotFoundException {
         return new FileInputStream(new File(path));
@@ -125,31 +127,26 @@ public class HeartRateController {
 
 
 
-    @GetMapping("/base64")
-    public RespBean getGraphBase64(HttpServletResponse resp) {
-        //调用算法端，获取base64编码
-        GRPCClient client = new GRPCClient("localhost", 50001);
-        HelloReply response = null;
-        try {
-            String queueName = "heart_rate";
-            response = client.greet(queueName);
-
-        } finally {
-            try {
-                client.shutdown();
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-        }
-        String base64 = response.getBase64Url();
-        return RespBean.success(base64);
-    }
-
-    @GetMapping("/start_examine")
-    public void startExamine() {
-        // 发送消息，算法端开始接受视频流...
-
-        // 消息回调，得到指标
-    }
+//    @GetMapping("/base64")
+//    public RespBean getGraphBase64(HttpServletResponse resp) {
+//        //调用算法端，获取base64编码
+//        GRPCClient client = new GRPCClient("localhost", 50001);
+//        HelloReply response = null;
+//        try {
+//            String queueName = "heart_rate";
+//            response = client.greet(queueName);
+//
+//        } catch (Exception e) {
+//            throw new RuntimeException(e);
+//        } finally {
+//            try {
+//                client.shutdown();
+//            } catch (InterruptedException e) {
+//                throw new RuntimeException(e);
+//            }
+//        }
+//        String base64 = response.getBase64Url();
+//        return RespBean.success(base64);
+//    }
 
 }
