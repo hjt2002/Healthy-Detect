@@ -244,8 +244,8 @@ def rr_main(queue):
 
     # 利用rtmp拉流的，需要现在手机端推流
     # webcam = cv2.VideoCapture('rtmp://119.3.221.223:1935/stream/pupils_trace')
-
-    webcam = cv2.VideoCapture(0)
+    url = "http://192.168.43.1:8081/video"
+    webcam = cv2.VideoCapture(url)
     faceCascade = cv2.CascadeClassifier('haarcascade_frontalface.xml')
 
     # Output Videos
@@ -396,7 +396,7 @@ def rr_main(queue):
             #     print('insert dataBase!!')
         cv2.putText(frame, "Respiration: %.1f" % rr, bpmTextLocation, font, fontScale, fontColor, lineType)
         temp_arr.append(rr)
-        print("temp_arr ---->", temp_arr)
+        # print("temp_arr ---->", temp_arr)
 
 
         # 使用 send_result_to_backend 替代 *********************************

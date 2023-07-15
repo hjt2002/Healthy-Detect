@@ -27,12 +27,14 @@ global BASE64_QUEUE_BLOOD_PRESSURE
 global BASE64_QUEUE_TEMPERATURE
 global BASE64_QUEUE_OX
 global BASE64_QUEUE_RESPIRATION_RATE
+global QUEUE_MOOD
 
 BASE64_QUEUE_HEART_RATE = queue.Queue()
 BASE64_QUEUE_BLOOD_PRESSURE = queue.Queue()
 BASE64_QUEUE_TEMPERATURE = queue.Queue()
 BASE64_QUEUE_OX=queue.Queue()
 BASE64_QUEUE_RESPIRATION_RATE=queue.Queue()
+QUEUE_MOOD=queue.Queue()
 
 class Greeter(helloworld_pb2_grpc.GreeterServicer):
     def SayHello(self, request, context):
@@ -41,6 +43,7 @@ class Greeter(helloworld_pb2_grpc.GreeterServicer):
         # 根据不同的name返回不同的队列数据
         response = None
         if request.name == "heart_rate":
+            # 心率服务
             if BASE64_QUEUE_HEART_RATE.qsize() != 0:
                 # 队列存在str
                 # 定义返回数据
@@ -53,7 +56,7 @@ class Greeter(helloworld_pb2_grpc.GreeterServicer):
                 response = helloworld_pb2.HelloReply(type="null")
 
         elif request.name == "temperature":
-            # 血压服务
+            # 体温服务
             if BASE64_QUEUE_TEMPERATURE.qsize() != 0:
                 # 队列存在str
                 # 定义返回数据
@@ -81,7 +84,7 @@ class Greeter(helloworld_pb2_grpc.GreeterServicer):
 
 
         elif request.name == "respiration_rate":
-            # 血氧服务
+            # 呼吸频率服务
             if BASE64_QUEUE_RESPIRATION_RATE.qsize() != 0:
                 # 队列存在str
                 # 定义返回数据
@@ -89,6 +92,17 @@ class Greeter(helloworld_pb2_grpc.GreeterServicer):
                 my_type = "respiration"
                 my_rr = BASE64_QUEUE_RESPIRATION_RATE.get()
                 response = helloworld_pb2.HelloReply(date=my_date, type=my_type, base64url=my_rr)
+            else:
+                # 队列为空
+                response = helloworld_pb2.HelloReply(type="null")
+
+        elif request.name == "mood":
+            # 心情服务
+            if QUEUE_MOOD.qsize() != 0:
+                my_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                my_type = "mood"
+                my_mood = QUEUE_MOOD.get()
+                response = helloworld_pb2.HelloReply(date=my_date, type=my_type, base64url=my_mood)
             else:
                 # 队列为空
                 response = helloworld_pb2.HelloReply(type="null")
@@ -135,22 +149,26 @@ def serve():
 
 
 def my_main():
-    from algorithm.heartRate.main2 import main
+    from algorithm.heartRate.main import hr_main
     # BASE64_QUEUE_HEART_RATE 心率监测服务
-    thread_algorithm_heart_rate = Thread(target=main, args=(BASE64_QUEUE_HEART_RATE,))
+    thread_algorithm_heart_rate = Thread(target=hr_main, args=(BASE64_QUEUE_HEART_RATE,))
     # thread_algorithm_heart_rate.start()
 
     from algorithm.temperature.thermal_screening import main as temperature_main
     thread_algorithm_temperature = Thread(target=temperature_main, args=(BASE64_QUEUE_TEMPERATURE,))
-    thread_algorithm_temperature.start()
+    # thread_algorithm_temperature.start()
 
     from algorithm.bloodOxygen.mainO import ox_main
     thread_algorithm_oxygen = Thread(target=ox_main, args=(BASE64_QUEUE_OX,))
-    thread_algorithm_oxygen.start()
+    # thread_algorithm_oxygen.start()
 
     from algorithm.respirationRate.mainR import rr_main
     thread_algorithm_rr = Thread(target=rr_main, args=(BASE64_QUEUE_RESPIRATION_RATE,))
-    thread_algorithm_rr.start()
+    # thread_algorithm_rr.start()
+
+    from algorithm.moodJudge.moodJudge import start
+    thread_algorithm_mood = Thread(target=start, args=(QUEUE_MOOD,))
+    thread_algorithm_mood.start()
 
 
     # BASE64_QUEUE_BLOOD_PRESSURE 血压监测服务

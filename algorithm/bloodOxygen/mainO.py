@@ -109,7 +109,8 @@ def send_result_to_backend(queue):
 
 def ox_main(queue):
     # 测试可以用本机，更方便
-    webcam = cv2.VideoCapture(0)
+    url = "http://192.168.43.1:8081/video"
+    webcam = cv2.VideoCapture(url)
     # webcam = cv2.VideoCapture('rtmp://119.3.221.223:1935/stream/pupils_trace')
     # p = os.path.dirname(os.getcwd())
     # p = p + '/algorithm/bloodOxygen/haarcascade_frontalface.xml'
